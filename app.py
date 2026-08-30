@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request
 import joblib
+import os
 
 app = Flask(__name__)
 
-rf = joblib.load('models/rf_model.pkl')
-scaler = joblib.load('models/scaler.pkl')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+rf = joblib.load(os.path.join(BASE_DIR, 'models', 'rf_model.pkl'))
+scaler = joblib.load(os.path.join(BASE_DIR, 'models', 'scaler.pkl'))
 
 def predict_fake_account(followers, follows, profile_pic, description_length,
                           external_url, private, posts):
