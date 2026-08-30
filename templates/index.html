@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fake Account Detector</title>
+</head>
+<body style="font-family: Arial; max-width: 500px; margin: 40px auto;">
+    <h2>Fake Account Detection</h2>
+    <form method="POST">
+        <label>Followers Count:</label><br>
+        <input type="number" name="followers" required><br><br>
+
+        <label>Following Count (#follows):</label><br>
+        <input type="number" name="follows" required><br><br>
+
+        <label>Has Profile Picture? (1 = yes, 0 = no):</label><br>
+        <input type="number" name="profile_pic" min="0" max="1" required><br><br>
+
+        <label>Bio / Description Length (characters):</label><br>
+        <input type="number" name="description_length" required><br><br>
+
+        <label>Has External URL? (1 = yes, 0 = no):</label><br>
+        <input type="number" name="external_url" min="0" max="1" required><br><br>
+
+        <label>Is Private? (1 = yes, 0 = no):</label><br>
+        <input type="number" name="private" min="0" max="1" required><br><br>
+
+        <label>Number of Posts:</label><br>
+        <input type="number" name="posts" required><br><br>
+
+        <button type="submit">Predict</button>
+    </form>
+
+    {% if result %}
+        <h3>Prediction: {{ result }}</h3>
+    {% endif %}
+</body>
+</html>
