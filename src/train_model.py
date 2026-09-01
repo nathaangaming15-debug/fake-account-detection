@@ -7,11 +7,14 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve
 from imblearn.over_sampling import SMOTE
 
-FEATURES = ['follower_following_ratio', 'completeness_score', 'posts_per_follower']
+FEATURES = ['follower_following_ratio', 'completeness_score', 'posts_per_follower',
+            'username_digit_ratio', 'fullname_digit_ratio', 'fullname_word_count',
+            'name_equals_username']
 
 def train():
     os.makedirs('reports', exist_ok=True)
@@ -37,11 +40,32 @@ def train():
     lr_preds = lr.predict(X_test_scaled)
     print("Logistic Regression Report:\n", classification_report(y_test, lr_preds))
 
-    # Main model
-    rf = RandomForestClassifier(n_estimators=200, max_depth=6, random_state=42)
-    rf.fit(X_res, y_res)
+      # Main model - hyperparameter tuning via grid search
+    param_grid = {
+        'n_estimators': [100, 200, 300],
+        'max_depth': [4, 6, 8, None],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4],
+    }
+
+    grid_search = GridSearchCV(
+        RandomForestClassifier(random_state=42),
+        param_grid,
+        cv=5,
+        scoring='roc_auc',
+        n_jobs=-1
+    )
+    grid_search.fit(X_res, y_res)
+
+    print("Best parameters found:", grid_search.best_params_)
+    print("Best cross-validation ROC-AUC:", grid_search.best_score_)
+
+    rf = grid_search.best_estimator_
     preds = rf.predict(X_test_scaled)
     probs = rf.predict_proba(X_test_scaled)[:, 1]
+
+    
+  
 
     print("Random Forest Report:\n", classification_report(y_test, preds))
     print("ROC-AUC:", roc_auc_score(y_test, probs))
