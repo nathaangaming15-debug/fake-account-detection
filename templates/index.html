@@ -1,79 +1,306 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Fake Account Detector</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; color: #222; }
-        h2 { margin-bottom: 4px; }
-        p.subtitle { color: #666; margin-top: 0; }
-        label { font-weight: 600; font-size: 0.9em; }
-        input, select { width: 100%; padding: 8px; margin: 4px 0 14px 0; box-sizing: border-box;
-                border: 1px solid #ccc; border-radius: 4px; }
-        button { background: #2563eb; color: white; border: none; padding: 10px 20px;
-                 border-radius: 4px; font-size: 1em; cursor: pointer; }
-        button:hover { background: #1d4ed8; }
-        .result { margin-top: 24px; padding: 16px; border-radius: 6px; }
-        .result.fake { background: #fef2f2; border: 1px solid #fecaca; }
-        .result.real { background: #f0fdf4; border: 1px solid #bbf7d0; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fake Account Detection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF9;
+    --card: #FFFFFF;
+    --border: #E4E4E1;
+    --text: #1F2323;
+    --text-2: #6B6F6E;
+    --accent: #2D5A4F;
+    --accent-bg: #E8F0EC;
+    --danger: #A13B2C;
+    --danger-bg: #F5E7E3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 32px; }
+
+  header.site-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .wordmark { font-size: 18px; font-weight: 600; }
+  .tagline { font-size: 13px; color: var(--text-2); }
+
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    padding: 48px 0 40px;
+    align-items: start;
+  }
+  .hero-copy h1 {
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 1.25;
+    margin: 0 0 16px;
+    max-width: 14ch;
+  }
+  .hero-copy p {
+    font-size: 15px;
+    color: var(--text-2);
+    max-width: 44ch;
+    margin: 0 0 24px;
+  }
+  .stat-line {
+    display: flex;
+    gap: 28px;
+    margin: 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .stat-line div { display: flex; flex-direction: column; gap: 4px; }
+  .stat-line dt { font-size: 12px; color: var(--text-2); }
+  .stat-line dd { margin: 0; font-size: 18px; font-weight: 600; }
+
+  .scan-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+  }
+  .scan-panel h2 { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+  .scan-panel .scan-sub { font-size: 13px; color: var(--text-2); margin: 0 0 20px; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 16px;
+  }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 5px; }
+  .field input, .field select {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: #fff;
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    outline: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+
+  button.run-scan {
+    width: 100%;
+    margin-top: 8px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  button.run-scan:hover { opacity: 0.9; }
+
+  .verdict {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .verdict-verify { background: var(--accent-bg); }
+  .verdict-flag { background: var(--danger-bg); }
+
+  .badge {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  .verdict-verify .badge { background: var(--accent); color: #fff; }
+  .verdict-flag .badge { background: var(--danger); color: #fff; }
+
+  .verdict-detail { flex: 1; }
+  .verdict-detail .verdict-value { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .verdict-verify .verdict-value { color: var(--accent); }
+  .verdict-flag .verdict-value { color: var(--danger); }
+  .verdict-detail .verdict-sub { font-size: 13px; color: var(--text-2); }
+
+  .signals { padding: 40px 0 48px; border-top: 1px solid var(--border); }
+  .signals h2 { font-size: 18px; font-weight: 600; margin: 0 0 20px; }
+  .ledger { list-style: none; margin: 0; padding: 0; }
+  .ledger li {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+  .ledger li:last-child { border-bottom: 1px solid var(--border); }
+  .ledger-name { font-size: 14px; font-weight: 600; }
+  .ledger-desc { font-size: 14px; color: var(--text-2); max-width: 56ch; }
+
+  footer { padding: 20px 0 36px; font-size: 13px; color: var(--text-2); }
+
+  @media (max-width: 800px) {
+    .hero { grid-template-columns: 1fr; }
+    .field-row { grid-template-columns: 1fr; }
+    .ledger li { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
 </head>
 <body>
-    <h2>Fake Account Detection</h2>
-    <p class="subtitle">Enter account details to estimate whether it's fake or genuine.</p>
-    <form method="POST">
-        <label>Followers Count</label>
-        <input type="number" name="followers" required>
+<div class="wrap">
 
-        <label>Following Count</label>
-        <input type="number" name="follows" required>
+  <header class="site-header">
+    <span class="wordmark">Fake Account Detection</span>
+    <span class="tagline">Account authenticity scanner</span>
+  </header>
 
-        <label>Has Profile Pic?</label>
-        <select name="profile_pic">
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-        </select>
+  <section class="hero">
+    <div class="hero-copy">
+      <h1>Tell real accounts from fabricated ones.</h1>
+      <p>Fake Account Detection is a machine learning project (Random Forest, trained with SMOTE-balanced data) &mdash; not a moderation tool. Treat results as a signal, not a verdict.</p>
+      <dl class="stat-line">
+        <div><dt>Accuracy</dt><dd>90%</dd></div>
+        <div><dt>ROC-AUC</dt><dd>0.95</dd></div>
+        <div><dt>Signals read</dt><dd>7</dd></div>
+      </dl>
+    </div>
 
-        <label>Bio/Description Length (characters)</label>
-        <input type="number" name="description_length" required>
-
-        <label>Has External URL?</label>
-        <select name="external_url">
-            <option value="0">No</option>
-            <option value="1">Yes</option>
-        </select>
-
-        <label>Private Account?</label>
-        <select name="private">
-            <option value="0">No</option>
-            <option value="1">Yes</option>
-        </select>
-
-        <label>Number of Posts</label>
-        <input type="number" name="posts" required>
-
-        <label>Username Digit Ratio (0 to 1, e.g. "user829" = 0.375)</label>
-        <input type="number" step="0.01" min="0" max="1" name="username_digit_ratio" required>
-
-        <label>Full Name Digit Ratio (0 to 1)</label>
-        <input type="number" step="0.01" min="0" max="1" name="fullname_digit_ratio" required>
-
-        <label>Full Name Word Count</label>
-        <input type="number" name="fullname_word_count" required>
-
-        <label>Full Name Equals Username?</label>
-        <select name="name_equals_username">
-            <option value="0">No</option>
-            <option value="1">Yes</option>
-        </select>
-
-        <button type="submit">Predict</button>
-    </form>
-
-    {% if result %}
-        <div class="result {{ 'fake' if result == 'Fake' else 'real' }}">
-            <h3>Prediction: {{ result }}</h3>
-            <p>Model confidence this account is fake: {{ confidence }}%</p>
+    <div class="scan-panel">
+      <h2>Run a scan</h2>
+      <p class="scan-sub">Enter the account's public details below.</p>
+      <form method="POST">
+        <div class="field-row">
+          <div class="field">
+            <label for="followers">Followers</label>
+            <input type="number" id="followers" name="followers" required>
+          </div>
+          <div class="field">
+            <label for="follows">Following</label>
+            <input type="number" id="follows" name="follows" required>
+          </div>
         </div>
-    {% endif %}
+
+        <div class="field-row">
+          <div class="field">
+            <label for="profile_pic">Profile picture</label>
+            <select id="profile_pic" name="profile_pic">
+              <option value="1">Present</option>
+              <option value="0">Missing</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="description_length">Bio length (chars)</label>
+            <input type="number" id="description_length" name="description_length" required>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="external_url">External link</label>
+            <select id="external_url" name="external_url">
+              <option value="0">None</option>
+              <option value="1">Present</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="private">Account privacy</label>
+            <select id="private" name="private">
+              <option value="0">Public</option>
+              <option value="1">Private</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="posts">Post count</label>
+            <input type="number" id="posts" name="posts" required>
+          </div>
+          <div class="field">
+            <label for="fullname_word_count">Full name word count</label>
+            <input type="number" id="fullname_word_count" name="fullname_word_count" required>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="username_digit_ratio">Username digit ratio (0&ndash;1)</label>
+            <input type="number" step="0.01" min="0" max="1" id="username_digit_ratio" name="username_digit_ratio" required>
+          </div>
+          <div class="field">
+            <label for="fullname_digit_ratio">Full name digit ratio (0&ndash;1)</label>
+            <input type="number" step="0.01" min="0" max="1" id="fullname_digit_ratio" name="fullname_digit_ratio" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="name_equals_username">Full name matches username</label>
+          <select id="name_equals_username" name="name_equals_username">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+
+        <button type="submit" class="run-scan">Run scan</button>
+      </form>
+
+      {% if result %}
+      <div class="verdict {{ 'verdict-flag' if result == 'Fake' else 'verdict-verify' }}">
+        <span class="badge">{{ 'FLAGGED' if result == 'Fake' else 'VERIFIED' }}</span>
+        <div class="verdict-detail">
+          <div class="verdict-value">{{ 'Likely fake' if result == 'Fake' else 'Likely genuine' }}</div>
+          <div class="verdict-sub">{{ confidence }}% confidence this account is fake</div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="signals">
+    <h2>What the model reads</h2>
+    <ul class="ledger">
+      <li>
+        <span class="ledger-name">Follower / following balance</span>
+        <span class="ledger-desc">Fabricated accounts typically follow far more people than follow them back &mdash; a lopsided ratio is one of the strongest tells.</span>
+      </li>
+      <li>
+        <span class="ledger-name">Username &amp; name composition</span>
+        <span class="ledger-desc">Bulk-generated accounts often carry usernames padded with digits, and a full name that's identical to the username.</span>
+      </li>
+      <li>
+        <span class="ledger-name">Profile completeness</span>
+        <span class="ledger-desc">A picture, a bio, an external link, a public setting &mdash; genuine accounts tend to fill these in; fabricated ones rarely bother.</span>
+      </li>
+      <li>
+        <span class="ledger-name">Posting behaviour</span>
+        <span class="ledger-desc">Posting volume relative to audience size reveals accounts built for following, not for sharing.</span>
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    Verascope is a machine learning project (Random Forest, trained with SMOTE-balanced data) &mdash; not a moderation tool. Treat results as a signal, not a verdict.
+  </footer>
+
+</div>
 </body>
 </html>
